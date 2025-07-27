@@ -1,5 +1,6 @@
 import React from 'react';
 import { useState,useEffect } from 'react';
+import axios from "axios";
 import {
   Box,
   Table,
@@ -24,6 +25,17 @@ const employees = [
 ];
 
 export default function Employees() {
+  const [array, setArray] = useState([]);
+
+  const fetchAPI=async()=>{
+    const response = await axios.get("http://localhost:8080/api");
+    setArray(response.data.fruits);
+    console.log(response.data.fruits);
+  };
+
+  useEffect(()=>{
+   fetchAPI();
+  },[])
   return (
     <>
     <Box p={2} position="relative">
