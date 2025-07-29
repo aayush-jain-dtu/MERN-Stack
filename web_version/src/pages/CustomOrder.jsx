@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -10,7 +10,12 @@ import {
   Grid,
   Card,
   CardContent,
-  Divider
+  Divider,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Alert
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -19,13 +24,32 @@ import {
   Person as PersonIcon,
   Send as SendIcon
 } from '@mui/icons-material';
+import axios from 'axios';
 
 const CustomOrder = () => {
   const [formData, setFormData] = useState({
     quantity: '',
+    productName: '',
     description: '',
-    selectedUser: ''
+    selectedUser: '',
+    imageUrl: ''
   });
+  const [clients, setClients] = useState([]);
+  const [alert, setAlert] = useState({ show: false, message: '', type: 'success' });
+  const [showImageInput, setShowImageInput] = useState(false);
+
+  const fetchClients = async () => {
+    try {
+      const res = await axios.get('http://localhost:8080/clients');
+      setClients(res.data.clients);
+    } catch (err) {
+      console.error('Error fetching clients:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchClients();
+  }, []);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -34,9 +58,64 @@ const CustomOrder = () => {
     }));
   };
 
-  const handleSubmit = () => {
-    console.log('Custom Order Submitted:', formData);
-    // Handling form submission logic
+  const handlePickImages = () => {
+    setShowImageInput(true);
+  };
+
+  const handleSubmit = async () => {
+    // Validation
+    if (!formData.quantity || !formData.productName || !formData.description || !formData.selectedUser) {
+      setAlert({
+        show: true,
+        message: 'Please fill in all required fields (Quantity, Product Name, Description, and Client)',
+        type: 'error'
+      });
+      return;
+    }
+
+    try {
+      const customOrderPayload = {
+        client: formData.selectedUser,
+        price: 0, // Custom orders might not have predefined price
+        quantity: parseInt(formData.quantity),
+        productName: formData.productName,
+        productTitle: formData.productName,
+        description: formData.description,
+        image: formData.imageUrl || '',
+        is_custom: true
+      };
+
+      await axios.post('http://localhost:8080/orders', customOrderPayload);
+      
+      setAlert({
+        show: true,
+        message: 'Custom order placed successfully!',
+        type: 'success'
+      });
+
+      // Reset form
+      setFormData({
+        quantity: '',
+        productName: '',
+        description: '',
+        selectedUser: '',
+        imageUrl: ''
+      });
+      setShowImageInput(false);
+
+      // Hide alert after 3 seconds
+      setTimeout(() => {
+        setAlert({ show: false, message: '', type: 'success' });
+      }, 3000);
+
+    } catch (err) {
+      console.error('Error placing custom order:', err);
+      setAlert({
+        show: true,
+        message: 'Error placing custom order. Please try again.',
+        type: 'error'
+      });
+    }
   };
 
   return (
@@ -55,6 +134,17 @@ const CustomOrder = () => {
             </Box>
           </Box>
         </Paper>
+
+        {/* Alert */}
+        {alert.show && (
+          <Alert 
+            severity={alert.type} 
+            sx={{ mb: 2 }}
+            onClose={() => setAlert({ show: false, message: '', type: 'success' })}
+          >
+            {alert.message}
+          </Alert>
+        )}
 
         {/* Form Content */}
         <Paper elevation={1} sx={{ p: 4, backgroundColor: '#f5f5f5' }}>
@@ -76,8 +166,36 @@ const CustomOrder = () => {
               <TextField
                 fullWidth
                 placeholder="Add Quantity"
+                type="number"
                 value={formData.quantity}
                 onChange={(e) => handleInputChange('quantity', e.target.value)}
+                inputProps={{ min: 1 }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: '#424242',
+                    color: 'white',
+                    '& fieldset': {
+                      borderColor: '#666',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: '#888',
+                    },
+                  },
+                  '& .MuiInputBase-input::placeholder': {
+                    color: '#ccc',
+                    opacity: 1,
+                  },
+                }}
+              />
+            </Grid>
+
+            {/* Product Name Field */}
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                placeholder="Add Product Name"
+                value={formData.productName}
+                onChange={(e) => handleInputChange('productName', e.target.value)}
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     backgroundColor: '#424242',
@@ -125,6 +243,34 @@ const CustomOrder = () => {
               />
             </Grid>
 
+            {/* Image URL Input (shown when Pick Images is clicked) */}
+            {showImageInput && (
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  placeholder="Enter Image URL"
+                  value={formData.imageUrl}
+                  onChange={(e) => handleInputChange('imageUrl', e.target.value)}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      backgroundColor: '#424242',
+                      color: 'white',
+                      '& fieldset': {
+                        borderColor: '#666',
+                      },
+                      '&:hover fieldset': {
+                        borderColor: '#888',
+                      },
+                    },
+                    '& .MuiInputBase-input::placeholder': {
+                      color: '#ccc',
+                      opacity: 1,
+                    },
+                  }}
+                />
+              </Grid>
+            )}
+
             {/* Action Buttons */}
             <Grid item xs={12}>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -133,6 +279,7 @@ const CustomOrder = () => {
                   variant="outlined"
                   startIcon={<ImageIcon />}
                   fullWidth
+                  onClick={handlePickImages}
                   sx={{
                     py: 2,
                     borderColor: '#9c27b0',
@@ -168,23 +315,39 @@ const CustomOrder = () => {
                   Take Photos
                 </Button>
 
-                {/* Select User Button */}
-                <Button
-                  variant="contained"
-                  startIcon={<PersonIcon />}
-                  fullWidth
-                  sx={{
-                    py: 2,
-                    backgroundColor: '#b39ddb',
-                    color: '#424242',
-                    borderRadius: '25px',
-                    '&:hover': {
-                      backgroundColor: '#9575cd',
-                    },
-                  }}
-                >
-                  Select User
-                </Button>
+                {/* Select User Dropdown */}
+                <FormControl fullWidth>
+                  <Select
+                    value={formData.selectedUser}
+                    onChange={(e) => handleInputChange('selectedUser', e.target.value)}
+                    displayEmpty
+                    startAdornment={<PersonIcon />}
+                    sx={{
+                      py: 1,
+                      backgroundColor: '#b39ddb',
+                      color: '#424242',
+                      borderRadius: '25px',
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        border: 'none',
+                      },
+                      '&:hover .MuiOutlinedInput-notchedOutline': {
+                        border: 'none',
+                      },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        border: 'none',
+                      },
+                    }}
+                  >
+                    <MenuItem value="">
+                      <em>Select User</em>
+                    </MenuItem>
+                    {clients.map((client, index) => (
+                      <MenuItem key={index} value={client.name}>
+                        {client.name} ({client.email})
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
 
                 {/* Submit Order Button */}
                 <Button

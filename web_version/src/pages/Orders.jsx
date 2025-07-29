@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+// Orders.jsx with role-based filtering
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -14,39 +15,72 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper
+  Paper,
+  Button,
+  Card,
+  CardMedia,
+  CardContent
 } from '@mui/material';
 import SortIcon from '@mui/icons-material/Sort';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import NotificationsIcon from '@mui/icons-material/Notifications';
+import CloseIcon from '@mui/icons-material/Close';
+import axios from 'axios';
 
 const tabLabels = ['Pending', 'In Progress', 'Completed', 'Rejected', 'Cancelled'];
 
-const mockOrders = [
-  { id: 'ORD001', client: 'Yash Yash', amount: '₹1200', status: 'Pending', date: '2024-07-14' },
-  { id: 'ORD002', client: 'Manubhav Batra', amount: '₹950', status: 'In Progress', date: '2024-07-13' },
-  { id: 'ORD003', client: 'Prod Test', amount: '₹2100', status: 'Completed', date: '2024-07-10' },
-  { id: 'ORD004', client: 'Test Client', amount: '₹750', status: 'Rejected', date: '2024-07-11' },
-];
-
-const Orders = () => {
+const Orders = ({ userRole, userEmail }) => {
   const [tabIndex, setTabIndex] = useState(0);
   const [search, setSearch] = useState('');
+  const [orders, setOrders] = useState([]);
+  const [customDetails, setCustomDetails] = useState(null);
+
+  const fetchOrders = async () => {
+    const res = await axios.get("http://localhost:8080/orders");
+    setOrders(res.data);
+  };
+
+  const handleShowCustomDetails = async (orderId) => {
+    try {
+      const res = await axios.get(`http://localhost:8080/orders/${orderId}/custom-details`);
+      setCustomDetails(res.data);
+    } catch (err) {
+      console.error('Error fetching custom details:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const handleStatusChange = async (id, newStatus) => {
+    await axios.patch(`http://localhost:8080/orders/${id}/status`, { status: newStatus });
+    fetchOrders();
+  };
 
   const handleTabChange = (event, newValue) => {
     setTabIndex(newValue);
+    setCustomDetails(null); // hide custom details on tab switch
   };
 
   const currentStatus = tabLabels[tabIndex];
-  const filteredOrders = mockOrders.filter(
-    (order) =>
-      order.status === currentStatus &&
-      order.id.toLowerCase().includes(search.toLowerCase())
-  );
+  
+  // Filter orders based on user role
+  const filteredOrders = orders.filter((order) => {
+    const matchesStatus = order.status === currentStatus;
+    const matchesSearch = order.id.toLowerCase().includes(search.toLowerCase());
+    
+    // If client, only show orders for their email
+    if (userRole === 'client') {
+      return matchesStatus && matchesSearch && order.email === userEmail;
+    }
+    
+    // For owner and employee, show all orders
+    return matchesStatus && matchesSearch;
+  });
 
   return (
     <Box sx={{ px: 3, py: 2, backgroundColor: '#1c1b23', color: 'white', minHeight: '100vh' }}>
-      
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="h6">Orders</Typography>
@@ -56,6 +90,13 @@ const Orders = () => {
           </IconButton>
         </Box>
       </Box>
+
+      {/* Role indicator for clients */}
+      {userRole === 'client' && (
+        <Typography variant="body2" sx={{ color: '#aaa', mb: 2 }}>
+          Showing orders for: {userEmail}
+        </Typography>
+      )}
 
       {/* Tabs */}
       <Tabs
@@ -105,10 +146,54 @@ const Orders = () => {
       {/* Filter Info */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="body2" sx={{ color: '#aaa' }}>Today</Typography>
-        <Link component="button" sx={{ color: '#a288e3' }}>
+        <Link component="button" sx={{ color: '#a288e3' }} onClick={() => setSearch('')}>
           Remove Filter
         </Link>
       </Box>
+
+      {/* Custom Details Card */}
+      {customDetails && (
+        <Box sx={{ mt: 3, mb: 3 }}>
+          <Card sx={{ maxWidth: 600, mx: 'auto', backgroundColor: '#2e2e38', position: 'relative' }}>
+            {/* Close Button */}
+            <IconButton
+              onClick={() => setCustomDetails(null)}
+              sx={{
+                position: 'absolute',
+                top: 8,
+                right: 8,
+                color: '#ccc',
+                backgroundColor: '#444',
+                '&:hover': { backgroundColor: '#666' }
+              }}
+              size="small"
+            >
+              <CloseIcon />
+            </IconButton>
+
+            {/* Image */}
+            <CardMedia
+              component="img"
+              height="300"
+              image={customDetails.image}
+              alt={customDetails.productName}
+            />
+
+            {/* Text Info */}
+            <CardContent>
+              <Typography variant="h6" sx={{ color: 'white' }}>
+                {customDetails.productName}
+              </Typography>
+              <Typography variant="body2" sx={{ color: '#ccc', mt: 1 }}>
+                {customDetails.description}
+              </Typography>
+              <Typography variant="caption" sx={{ color: '#aaa', mt: 2, display: 'block' }}>
+                Client: {customDetails.client} | Email: {customDetails.email} | Date: {customDetails.date}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Box>
+      )}
 
       {/* Table Section */}
       {filteredOrders.length > 0 ? (
@@ -117,18 +202,57 @@ const Orders = () => {
             <TableHead>
               <TableRow>
                 <TableCell sx={{ color: 'white' }}>Order ID</TableCell>
+                <TableCell sx={{ color: 'white' }}>Product Name</TableCell>
                 <TableCell sx={{ color: 'white' }}>Client</TableCell>
-                <TableCell sx={{ color: 'white' }}>Amount</TableCell>
+                <TableCell sx={{ color: 'white' }}>Email</TableCell>
+                <TableCell sx={{ color: 'white' }}>Price</TableCell>
+                <TableCell sx={{ color: 'white' }}>Quantity</TableCell>
+                <TableCell sx={{ color: 'white' }}>Total</TableCell>
                 <TableCell sx={{ color: 'white' }}>Date</TableCell>
+                {userRole !== 'client' && <TableCell sx={{ color: 'white' }}>Actions</TableCell>}
               </TableRow>
             </TableHead>
             <TableBody>
               {filteredOrders.map((order) => (
                 <TableRow key={order.id}>
                   <TableCell sx={{ color: 'white' }}>{order.id}</TableCell>
+                  <TableCell sx={{ color: 'white' }}>{order.productName || order.productTitle || 'N/A'}</TableCell>
                   <TableCell sx={{ color: 'white' }}>{order.client}</TableCell>
-                  <TableCell sx={{ color: 'white' }}>{order.amount}</TableCell>
+                  <TableCell sx={{ color: 'white' }}>{order.email}</TableCell>
+                  <TableCell sx={{ color: 'white' }}>₹{order.price}</TableCell>
+                  <TableCell sx={{ color: 'white' }}>{order.quantity}</TableCell>
+                  <TableCell sx={{ color: 'white' }}>₹{order.price * order.quantity}</TableCell>
                   <TableCell sx={{ color: 'white' }}>{order.date}</TableCell>
+                  {userRole !== 'client' && (
+                    <TableCell sx={{ color: 'white' }}>
+                      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                        {order.status === 'Pending' && (
+                          <>
+                            <Button variant="outlined" size="small" color="warning" onClick={() => handleStatusChange(order.id, 'In Progress')}>Move to Progress</Button>
+                            <Button variant="outlined" size="small" color="error" onClick={() => handleStatusChange(order.id, 'Rejected')}>Move to Rejected</Button>
+                          </>
+                        )}
+                        {order.status === 'In Progress' && (
+                          <>
+                            <Button variant="outlined" size="small" color="success" onClick={() => handleStatusChange(order.id, 'Completed')}>Move to Completed</Button>
+                            <Button variant="outlined" size="small" color="error" onClick={() => handleStatusChange(order.id, 'Rejected')}>Move to Rejected</Button>
+                          </>
+                        )}
+                        {order.is_custom && (
+                          <Button variant="contained" size="small" color="secondary" onClick={() => handleShowCustomDetails(order.id)}>
+                            Show Custom Details
+                          </Button>
+                        )}
+                      </Box>
+                    </TableCell>
+                  )}
+                  {userRole === 'client' && order.is_custom && (
+                    <TableCell sx={{ color: 'white' }}>
+                      <Button variant="contained" size="small" color="secondary" onClick={() => handleShowCustomDetails(order.id)}>
+                        Show Custom Details
+                      </Button>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>

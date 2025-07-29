@@ -8,18 +8,25 @@ import LogoutIcon from '@mui/icons-material/Logout';
 
 const drawerWidth = 240;
 
-const Sidebar = ({ onNavigate, onLogout }) => {
-  const menuItems = [
-    { text: 'Home', icon: <HomeIcon /> },
-    { text: 'Orders' },
-    { text: 'Clients List' },
-    { text: 'Employees' },
-    { text: 'Reports' },
-    { text: 'Update Inventory' },
-    { text: 'Send Notification' },
-    { text: 'Place Custom Orders' },
-    { text: 'My Cart', icon: <ShoppingCartIcon /> },
-  ];
+const Sidebar = ({ onNavigate, onLogout, userRole }) => {
+  // Define menu items based on role
+  const getMenuItems = () => {
+    const allMenuItems = [
+      { text: 'Home', icon: <HomeIcon />, roles: ['owner', 'employee', 'client'] },
+      { text: 'Orders', roles: ['owner', 'employee', 'client'] },
+      { text: 'Clients List', roles: ['owner', 'employee'] },
+      { text: 'Employees', roles: ['owner'] },
+      { text: 'Reports', roles: ['owner', 'employee'] },
+      { text: 'Update Inventory', roles: ['owner', 'employee'] },
+      { text: 'Send Notification', roles: ['owner', 'employee'] },
+      { text: 'Place Custom Orders', roles: ['owner', 'employee', 'client'] },
+      { text: 'My Cart', icon: <ShoppingCartIcon />, roles: ['owner', 'employee', 'client'] },
+    ];
+
+    return allMenuItems.filter(item => item.roles.includes(userRole));
+  };
+
+  const menuItems = getMenuItems();
 
   return (
     <Drawer
@@ -35,7 +42,12 @@ const Sidebar = ({ onNavigate, onLogout }) => {
         }
       }}
     >
-      <Box sx={{ p: 2, fontSize: 20, fontWeight: 'bold' }}>Golfking</Box>
+      <Box sx={{ p: 2, fontSize: 20, fontWeight: 'bold' }}>
+        Golfking
+        <Box sx={{ fontSize: 12, color: '#aaa', mt: 1 }}>
+          Role: {userRole.charAt(0).toUpperCase() + userRole.slice(1)}
+        </Box>
+      </Box>
       <List>
         {menuItems.map((item) => (
           <ListItem button key={item.text} onClick={() => onNavigate(item.text)}>

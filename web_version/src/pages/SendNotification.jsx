@@ -14,6 +14,7 @@ import {
   Notifications as NotificationsIcon,
   Send as SendIcon
 } from '@mui/icons-material';
+import axios from 'axios';
 
 const SendNotification = () => {
   const [formData, setFormData] = useState({
@@ -28,15 +29,16 @@ const SendNotification = () => {
     }));
   };
 
-  const handleSendNotification = () => {
-    console.log('Notification Sent:', formData);
-    // Handle notification sending logic
-    // Reset form after sending
-    setFormData({
-      title: '',
-      message: ''
-    });
-  };
+ const handleSendNotification = async () => {
+  try {
+    await axios.post("http://localhost:8080/notifications", formData);
+    alert("Notification sent!");
+    setFormData({ title: '', message: '' });
+  } catch (error) {
+    console.error("Error sending notification:", error);
+    alert("Failed to send notification.");
+  }
+};
 
   return (
     <Container maxWidth="md">

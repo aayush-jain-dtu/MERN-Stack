@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Sidebar from './components/Sidebar.jsx';
+import Sidebar from './components/Sidebar.jsx'
 import Home from './pages/Home';
 import Orders from './pages/Orders';
 import ClientsList from './pages/ClientList.jsx';
@@ -15,13 +15,19 @@ import { Box } from '@mui/material';
 function App() {
   const [selectedPage, setSelectedPage] = useState('Home');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userRole, setUserRole] = useState(''); // 'owner', 'employee', 'client'
+  const [userEmail, setUserEmail] = useState('');
 
-  const handleLogin = () => {
+  const handleLogin = (role, email) => {
     setIsAuthenticated(true);
+    setUserRole(role);
+    setUserEmail(email);
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
+    setUserRole('');
+    setUserEmail('');
     setSelectedPage('Home');
   };
 
@@ -32,15 +38,19 @@ function App() {
 
   return (
     <Box sx={{ display: 'flex' }}>
-      <Sidebar onNavigate={setSelectedPage} onLogout={handleLogout} />
+      <Sidebar 
+        onNavigate={setSelectedPage} 
+        onLogout={handleLogout} 
+        userRole={userRole}
+      />
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         {selectedPage === 'Home' && <Home />}
-        {selectedPage === 'Orders' && <Orders />}
-        {selectedPage === 'Clients List' && <ClientsList />}
-        {selectedPage === 'Employees' && <Employees/>}
-        {selectedPage === 'Reports' && <Reports />}
-        {selectedPage === 'Update Inventory' && <UpdateInventory />}
-        {selectedPage === 'Send Notification' && <SendNotification />}
+        {selectedPage === 'Orders' && <Orders userRole={userRole} userEmail={userEmail} />}
+        {selectedPage === 'Clients List' && userRole !== 'client' && <ClientsList />}
+        {selectedPage === 'Employees' && userRole === 'owner' && <Employees/>}
+        {selectedPage === 'Reports' && userRole !== 'client' && <Reports />}
+        {selectedPage === 'Update Inventory' && userRole !== 'client' && <UpdateInventory />}
+        {selectedPage === 'Send Notification' && userRole !== 'client' && <SendNotification />}
         {selectedPage === 'Place Custom Orders' && <CustomOrder />}
         {selectedPage === 'My Cart' && <Cart/>}
       </Box>
