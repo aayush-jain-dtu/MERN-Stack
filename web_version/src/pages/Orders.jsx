@@ -27,6 +27,8 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import CloseIcon from '@mui/icons-material/Close';
 import axios from 'axios';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const tabLabels = ['Pending', 'In Progress', 'Completed', 'Rejected', 'Cancelled'];
 
 const Orders = ({ userRole, userEmail }) => {
@@ -36,13 +38,13 @@ const Orders = ({ userRole, userEmail }) => {
   const [customDetails, setCustomDetails] = useState(null);
 
   const fetchOrders = async () => {
-    const res = await axios.get("http://localhost:8080/orders");
+    const res = await axios.get("${API_URL}/orders");
     setOrders(res.data);
   };
 
   const handleShowCustomDetails = async (orderId) => {
     try {
-      const res = await axios.get(`http://localhost:8080/orders/${orderId}/custom-details`);
+      const res = await axios.get(`${API_URL}/orders/${orderId}/custom-details`);
       setCustomDetails(res.data);
     } catch (err) {
       console.error('Error fetching custom details:', err);
@@ -54,7 +56,7 @@ const Orders = ({ userRole, userEmail }) => {
   }, []);
 
   const handleStatusChange = async (id, newStatus) => {
-    await axios.patch(`http://localhost:8080/orders/${id}/status`, { status: newStatus });
+    await axios.patch(${API_URL}/orders/${id}/status`, { status: newStatus });
     fetchOrders();
   };
 
