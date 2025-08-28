@@ -32,10 +32,10 @@ const UpdateInventory = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await axios.get("${API_URL}/products");
+        const res = await axios.get(`${API_URL}/products`);
         setInventoryItems(res.data);
       } catch (err) {
-        console.error("Failed to fetch products:", err);
+        console.error(`Failed to fetch products:`, err);
       }
     };
     fetchProducts();
@@ -53,7 +53,7 @@ const UpdateInventory = () => {
       await axios.patch(`${API_URL}/products/${title}`, {
         quantityToAdd
       });
-      const res = await axios.get("${API_URL}/products");
+      const res = await axios.get(`${API_URL}/products`);
       setInventoryItems(res.data);
       setQuantities({ ...quantities, [title]: '' });
     } catch (err) {
