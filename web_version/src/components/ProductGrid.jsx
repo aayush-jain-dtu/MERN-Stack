@@ -17,6 +17,8 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import { useNavigate } from 'react-router-dom';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const ProductGrid = ({ searchTerm = '' }) => {
   const [array, setArray] = useState([]);
   const [open, setOpen] = useState(false);
@@ -25,7 +27,7 @@ const ProductGrid = ({ searchTerm = '' }) => {
 
   const fetchAPI = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/api");
+      const response = await axios.get("${API_URL}/api");
       setArray(response.data.fruits);
     } catch (error) {
       console.error("Error fetching categories:", error);
@@ -52,7 +54,7 @@ const ProductGrid = ({ searchTerm = '' }) => {
 
   const handleSubmit = async () => {
     try {
-      await axios.post("http://localhost:8080/api", newCategory);
+      await axios.post("${API_URL}/api", newCategory);
       await fetchAPI(); // Refresh category list
       handleClose();
     } catch (err) {
