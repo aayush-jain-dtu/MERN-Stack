@@ -49,7 +49,7 @@ export default function Employees() {
 
   const fetchEmployees = async () => {
     try {
-      const response = await axios.get("${API_URL}/employees");
+      const response = await axios.get(`${API_URL}/employees`);
       setEmployees(response.data.employees);
       console.log('Employees fetched:', response.data.employees);
     } catch (error) {
@@ -76,7 +76,7 @@ export default function Employees() {
         ...formData,
         password: formData.password || 'listiphy@1234' // Default password if not provided
       };
-      await axios.post("${API_URL}/employees", submitData);
+      await axios.post(`${API_URL}/employees`, submitData);
       setAlert({ show: true, message: 'Employee added successfully!', type: 'success' });
       setFormData({ name: '', email: '', contact: '', role: '', dept: '', salary: '', leaves: '', password: '' });
       setOpen(false);
