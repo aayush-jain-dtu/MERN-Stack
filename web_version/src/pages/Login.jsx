@@ -16,6 +16,8 @@ import {
 import LoginIcon from '@mui/icons-material/Login';
 import axios from 'axios';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const Login = ({ onLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -32,7 +34,7 @@ const Login = ({ onLogin }) => {
       try {
         // Fetch employees
         try {
-          const employeesResponse = await axios.get('http://localhost:8080/employees');
+          const employeesResponse = await axios.get('${API_URL}/employees');
           console.log('Raw employees data:', employeesResponse.data);
           
           let employeesData = [];
@@ -55,7 +57,7 @@ const Login = ({ onLogin }) => {
 
         // Fetch clients
         try {
-          const clientsResponse = await axios.get('http://localhost:8080/clients');
+          const clientsResponse = await axios.get('${API_URL}/clients');
           console.log('Raw clients data:', clientsResponse.data);
           
           let clientsData = [];
@@ -74,7 +76,7 @@ const Login = ({ onLogin }) => {
         } catch (err) {
           console.log('Could not fetch clients, trying alternative endpoint...');
           try {
-            const clientsResponse = await axios.get('http://localhost:8080/clientsList');
+            const clientsResponse = await axios.get('${API_URL}/clientsList');
             console.log('Raw clientsList data:', clientsResponse.data);
             
             let clientsData = [];
