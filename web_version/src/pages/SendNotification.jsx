@@ -33,7 +33,7 @@ const SendNotification = () => {
 
  const handleSendNotification = async () => {
   try {
-    await axios.post("${API_URL}/notifications", formData);
+    await axios.post(`${API_URL}/notifications`, formData);
     alert("Notification sent!");
     setFormData({ title: '', message: '' });
   } catch (error) {
