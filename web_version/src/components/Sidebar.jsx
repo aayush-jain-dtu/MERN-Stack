@@ -6,6 +6,8 @@ import HomeIcon from '@mui/icons-material/Home';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import LogoutIcon from '@mui/icons-material/Logout';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const drawerWidth = 240;
 
 const Sidebar = ({ onNavigate, onLogout, userRole }) => {
