@@ -16,6 +16,8 @@ import {
 } from '@mui/icons-material';
 import axios from 'axios';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const SendNotification = () => {
   const [formData, setFormData] = useState({
     title: '',
@@ -31,7 +33,7 @@ const SendNotification = () => {
 
  const handleSendNotification = async () => {
   try {
-    await axios.post("http://localhost:8080/notifications", formData);
+    await axios.post("${API_URL}/notifications", formData);
     alert("Notification sent!");
     setFormData({ title: '', message: '' });
   } catch (error) {
