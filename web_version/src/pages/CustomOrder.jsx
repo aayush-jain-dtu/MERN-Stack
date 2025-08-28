@@ -42,7 +42,7 @@ const CustomOrder = () => {
 
   const fetchClients = async () => {
     try {
-      const res = await axios.get('${API_URL}/clients');
+      const res = await axios.get(`${API_URL}/clients`);
       setClients(res.data.clients);
     } catch (err) {
       console.error('Error fetching clients:', err);
@@ -87,7 +87,7 @@ const CustomOrder = () => {
         is_custom: true
       };
 
-      await axios.post('${API_URL}/orders', customOrderPayload);
+      await axios.post(`${API_URL}/orders`, customOrderPayload);
       
       setAlert({
         show: true,
