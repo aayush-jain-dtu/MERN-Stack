@@ -22,6 +22,8 @@ import {
   Category as CategoryIcon
 } from '@mui/icons-material';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const UpdateInventory = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [inventoryItems, setInventoryItems] = useState([]);
@@ -30,7 +32,7 @@ const UpdateInventory = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await axios.get("http://localhost:8080/products");
+        const res = await axios.get("${API_URL}/products");
         setInventoryItems(res.data);
       } catch (err) {
         console.error("Failed to fetch products:", err);
@@ -48,10 +50,10 @@ const UpdateInventory = () => {
     if (isNaN(quantityToAdd)) return;
 
     try {
-      await axios.patch(`http://localhost:8080/products/${title}`, {
+      await axios.patch(`${API_URL}/products/${title}`, {
         quantityToAdd
       });
-      const res = await axios.get("http://localhost:8080/products");
+      const res = await axios.get("${API_URL}/products");
       setInventoryItems(res.data);
       setQuantities({ ...quantities, [title]: '' });
     } catch (err) {
