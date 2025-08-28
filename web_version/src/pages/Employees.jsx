@@ -27,6 +27,8 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import LockIcon from '@mui/icons-material/Lock';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export default function Employees() {
   const [employees, setEmployees] = useState([]);
   const [open, setOpen] = useState(false);
@@ -47,7 +49,7 @@ export default function Employees() {
 
   const fetchEmployees = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/employees");
+      const response = await axios.get("${API_URL}/employees");
       setEmployees(response.data.employees);
       console.log('Employees fetched:', response.data.employees);
     } catch (error) {
@@ -74,7 +76,7 @@ export default function Employees() {
         ...formData,
         password: formData.password || 'listiphy@1234' // Default password if not provided
       };
-      await axios.post("http://localhost:8080/employees", submitData);
+      await axios.post("${API_URL}/employees", submitData);
       setAlert({ show: true, message: 'Employee added successfully!', type: 'success' });
       setFormData({ name: '', email: '', contact: '', role: '', dept: '', salary: '', leaves: '', password: '' });
       setOpen(false);
@@ -87,7 +89,7 @@ export default function Employees() {
 
   const handleDelete = async (index) => {
     try {
-      await axios.delete(`http://localhost:8080/employees/${index}`);
+      await axios.delete(`${API_URL}/employees/${index}`);
       setAlert({ show: true, message: 'Employee deleted successfully!', type: 'success' });
       fetchEmployees(); // Refresh the list
     } catch (error) {
@@ -104,7 +106,7 @@ export default function Employees() {
       setEmployees(updatedEmployees);
 
       // Then update on server
-      await axios.patch(`http://localhost:8080/employees/${index}/leaves`, {
+      await axios.patch(`${API_URL}/employees/${index}/leaves`, {
         leaves: updatedEmployees[index].leaves
       });
       
