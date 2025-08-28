@@ -18,7 +18,7 @@ connectDB();
 
 app.use(cors({ origin: ["http://localhost:5173",
                         "http://localhost:3000",        
-                      "listiphy-mern.vercel.app"   
+                      "https://listiphy-mern.vercel.app"   
                         ] }));
 app.use(express.json());
 
