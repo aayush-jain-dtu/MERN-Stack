@@ -50,7 +50,7 @@ const SpecificProductGrid = () => {
 
   const fetchClients = async () => {
     try {
-      const res = await axios.get('${API_URL}/clients');
+      const res = await axios.get(`${API_URL}/clients`);
       setClients(res.data.clients);
     } catch (err) {
       console.error('Error fetching clients:', err);
@@ -106,7 +106,7 @@ const SpecificProductGrid = () => {
 
   const handleSubmit = async () => {
     try {
-      await axios.post("${API_URL}/products", newProduct);
+      await axios.post(`${API_URL}/products`, newProduct);
       await fetchCategoryProducts();
       handleClose();
     } catch (err) {
@@ -133,7 +133,7 @@ const SpecificProductGrid = () => {
         productName: selectedProduct.title
       };
 
-      await axios.post('${API_URL}/orders', orderPayload);
+      await axios.post(`${API_URL}/orders`, orderPayload);
       
       setOrderAlert({
         show: true,
@@ -180,7 +180,7 @@ const SpecificProductGrid = () => {
         productImage: selectedProduct.image
       };
 
-      await axios.post('${API_URL}/cart', cartPayload);
+      await axios.post(`${API_URL}/cart`, cartPayload);
       
       setOrderAlert({
         show: true,
