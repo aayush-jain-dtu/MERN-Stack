@@ -34,7 +34,7 @@ const Login = ({ onLogin }) => {
       try {
         // Fetch employees
         try {
-          const employeesResponse = await axios.get('${API_URL}/employees');
+          const employeesResponse = await axios.get(`${API_URL}/employees`);
           console.log('Raw employees data:', employeesResponse.data);
           
           let employeesData = [];
@@ -57,7 +57,7 @@ const Login = ({ onLogin }) => {
 
         // Fetch clients
         try {
-          const clientsResponse = await axios.get('${API_URL}/clients');
+          const clientsResponse = await axios.get(`${API_URL}/clients`);
           console.log('Raw clients data:', clientsResponse.data);
           
           let clientsData = [];
@@ -76,7 +76,7 @@ const Login = ({ onLogin }) => {
         } catch (err) {
           console.log('Could not fetch clients, trying alternative endpoint...');
           try {
-            const clientsResponse = await axios.get('${API_URL}/clientsList');
+            const clientsResponse = await axios.get(`${API_URL}/clientsList`);
             console.log('Raw clientsList data:', clientsResponse.data);
             
             let clientsData = [];
