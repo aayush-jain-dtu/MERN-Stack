@@ -25,6 +25,7 @@ import {
   Delete as DeleteIcon
 } from '@mui/icons-material';
 import axios from 'axios';
+const API_URL = import.meta.env.VITE_API_URL;
 
 const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -32,7 +33,7 @@ const Cart = () => {
 
   const fetchCartItems = async () => {
     try {
-      const res = await axios.get('http://localhost:8080/cart');
+      const res = await axios.get(${API_URL}/cart');
       setCartItems(res.data);
     } catch (err) {
       console.error('Error fetching cart items:', err);
@@ -45,7 +46,7 @@ const Cart = () => {
 
   const handleRemoveItem = async (index) => {
     try {
-      await axios.delete(`http://localhost:8080/cart/${index}`);
+      await axios.delete(`${API_URL}/cart/${index}`);
       await fetchCartItems();
       setAlert({
         show: true,
@@ -74,7 +75,7 @@ const Cart = () => {
     }
 
     try {
-      await axios.post('http://localhost:8080/cart/place-orders');
+      await axios.post('${API_URL}/cart/place-orders');
       await fetchCartItems(); // Refresh cart (should be empty now)
       setAlert({
         show: true,
