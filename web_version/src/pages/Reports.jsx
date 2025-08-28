@@ -1,6 +1,8 @@
 import React from 'react';
 import { Box, Card, CardContent, Typography, Button } from '@mui/material';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const reports = [
   { title: 'Inventory Report' },
   { title: 'Ordered Articles' },
