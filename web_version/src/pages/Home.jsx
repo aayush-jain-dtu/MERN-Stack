@@ -18,6 +18,8 @@ import {
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import axios from 'axios';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const Home = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [notifOpen, setNotifOpen] = useState(false);
@@ -37,7 +39,7 @@ const Home = () => {
 
   const fetchNotifications = async () => {
     try {
-      const res = await axios.get("http://localhost:8080/notifications");
+      const res = await axios.get("${API_URL}/notifications");
       setNotifications(res.data);
       setHasUnread(checkUnread(res.data));
     } catch (error) {
