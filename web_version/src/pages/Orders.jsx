@@ -38,7 +38,7 @@ const Orders = ({ userRole, userEmail }) => {
   const [customDetails, setCustomDetails] = useState(null);
 
   const fetchOrders = async () => {
-    const res = await axios.get("${API_URL}/orders");
+    const res = await axios.get(`${API_URL}/orders`);
     setOrders(res.data);
   };
 
@@ -56,7 +56,7 @@ const Orders = ({ userRole, userEmail }) => {
   }, []);
 
   const handleStatusChange = async (id, newStatus) => {
-    await axios.patch(${API_URL}/orders/${id}/status`, { status: newStatus });
+    await axios.patch(`${API_URL}/orders/${id}/status`, { status: newStatus });
     fetchOrders();
   };
 
