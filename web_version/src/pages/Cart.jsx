@@ -33,7 +33,7 @@ const Cart = () => {
 
   const fetchCartItems = async () => {
     try {
-      const res = await axios.get(${API_URL}/cart');
+      const res = await axios.get(`${API_URL}/cart`);
       setCartItems(res.data);
     } catch (err) {
       console.error('Error fetching cart items:', err);
@@ -75,7 +75,7 @@ const Cart = () => {
     }
 
     try {
-      await axios.post('${API_URL}/cart/place-orders');
+      await axios.post(`${API_URL}/cart/place-orders`);
       await fetchCartItems(); // Refresh cart (should be empty now)
       setAlert({
         show: true,
