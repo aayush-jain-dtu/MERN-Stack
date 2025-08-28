@@ -39,7 +39,7 @@ const Home = () => {
 
   const fetchNotifications = async () => {
     try {
-      const res = await axios.get("${API_URL}/notifications");
+      const res = await axios.get(`${API_URL}/notifications`);
       setNotifications(res.data);
       setHasUnread(checkUnread(res.data));
     } catch (error) {
