@@ -16,7 +16,10 @@ const Notification = require('./models/Notification');
 // Connect to database
 connectDB();
 
-app.use(cors({ origin: ["http://localhost:5173"] }));
+app.use(cors({ origin: ["http://localhost:5173",
+                        "http://localhost:3000",        
+                      "https://your-app.vercel.app"   
+                        ] }));
 app.use(express.json());
 
 // Helper function to generate order ID
