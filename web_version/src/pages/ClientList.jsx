@@ -45,7 +45,7 @@ export default function ClientsList() {
 
   const fetchClients = async () => {
     try {
-      const response = await axios.get("${API_URL}/clients");
+      const response = await axios.get(`${API_URL}/clients`);
       setClients(response.data.clients);
       console.log('Clients fetched:', response.data.clients);
     } catch (error) {
@@ -72,7 +72,7 @@ export default function ClientsList() {
         ...formData,
         password: formData.password || 'listiphy@123' // Default password if not provided
       };
-      await axios.post("${API_URL}/clients", submitData);
+      await axios.post(`${API_URL}/clients`, submitData);
       setAlert({ show: true, message: 'Client added successfully!', type: 'success' });
       setFormData({ name: '', email: '', contact: '', address: '', password: '' });
       setOpen(false);
