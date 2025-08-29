@@ -43,7 +43,6 @@ const Cart = () => {
     fetchCartItems();
   }, []);
 
-  // Fixed: Use item._id instead of index
   const handleRemoveItem = async (itemId) => {
     try {
       await axios.delete(`http://localhost:8080/cart/${itemId}`);
@@ -76,7 +75,7 @@ const Cart = () => {
 
     try {
       await axios.post('http://localhost:8080/cart/place-orders');
-      await fetchCartItems(); // Refresh cart (should be empty now)
+      await fetchCartItems();
       setAlert({
         show: true,
         message: `Successfully placed ${cartItems.length} orders!`,
@@ -87,7 +86,7 @@ const Cart = () => {
       console.error('Error placing cart orders:', err);
       let message = 'Error placing orders. Please try again.';
       if (err.response && err.response.data && err.response.data.error) {
-        message = err.response.data.error;  // use backend's stock message
+        message = err.response.data.error;
       }
       setAlert({ show: true, message, type: 'error' });
     }
@@ -109,7 +108,6 @@ const Cart = () => {
   return (
     <Container maxWidth="lg">
       <Box sx={{ mt: 3, mb: 3 }}>
-        {/* Header */}
         <Paper elevation={2} sx={{ p: 2, mb: 3, backgroundColor: '#424242' }}>
           <Box display="flex" alignItems="center" justifyContent="space-between">
             <Box display="flex" alignItems="center">
@@ -126,7 +124,6 @@ const Cart = () => {
           </Box>
         </Paper>
 
-        {/* Alert */}
         {alert.show && (
           <Alert 
             severity={alert.type} 
@@ -138,7 +135,6 @@ const Cart = () => {
         )}
 
         {cartItems.length === 0 ? (
-          /* Empty Cart Content */
           <Paper elevation={1} sx={{ p: 4, textAlign: 'center', backgroundColor: '#f5f5f5' }}>
             <Box sx={{ py: 8 }}>
               <ShoppingCartIcon sx={{ fontSize: 80, color: '#bdbdbd', mb: 3 }} />
@@ -158,7 +154,6 @@ const Cart = () => {
             </Box>
           </Paper>
         ) : (
-          /* Cart Items */
           <Box>
             <Grid container spacing={3}>
               {cartItems.map((item, index) => (
@@ -214,7 +209,6 @@ const Cart = () => {
               ))}
             </Grid>
 
-            {/* Summary and Place Orders */}
             <Paper elevation={2} sx={{ mt: 4, p: 3, backgroundColor: '#424242', color: 'white' }}>
               <Box display="flex" justifyContent="space-between" alignItems="center">
                 <Box>
@@ -253,3 +247,5 @@ const Cart = () => {
 };
 
 export default Cart;
+
+
