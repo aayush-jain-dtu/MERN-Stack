@@ -194,7 +194,7 @@ const Cart = () => {
                       </Typography>
                     </CardContent>
                     <IconButton
-                      onClick={() => handleRemoveItem(item._id)} {/* Fixed: Use item._id */}
+                      onClick={() => handleRemoveItem(item._id)}
                       sx={{
                         position: 'absolute',
                         top: 8,
