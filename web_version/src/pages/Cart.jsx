@@ -25,7 +25,6 @@ import {
   Delete as DeleteIcon
 } from '@mui/icons-material';
 import axios from 'axios';
-const API_URL = import.meta.env.VITE_API_URL;
 
 const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -33,7 +32,7 @@ const Cart = () => {
 
   const fetchCartItems = async () => {
     try {
-      const res = await axios.get(`${API_URL}/cart`);
+      const res = await axios.get('http://localhost:8080/cart');
       setCartItems(res.data);
     } catch (err) {
       console.error('Error fetching cart items:', err);
@@ -44,9 +43,10 @@ const Cart = () => {
     fetchCartItems();
   }, []);
 
-  const handleRemoveItem = async (index) => {
+  // Fixed: Use item._id instead of index
+  const handleRemoveItem = async (itemId) => {
     try {
-      await axios.delete(`${API_URL}/cart/${index}`);
+      await axios.delete(`http://localhost:8080/cart/${itemId}`);
       await fetchCartItems();
       setAlert({
         show: true,
@@ -75,7 +75,7 @@ const Cart = () => {
     }
 
     try {
-      await axios.post(`${API_URL}/cart/place-orders`);
+      await axios.post('http://localhost:8080/cart/place-orders');
       await fetchCartItems(); // Refresh cart (should be empty now)
       setAlert({
         show: true,
@@ -84,13 +84,13 @@ const Cart = () => {
       });
       setTimeout(() => setAlert({ show: false, message: '', type: 'success' }), 3000);
     } catch (err) {
-  console.error('Error placing cart orders:', err);
-  let message = 'Error placing orders. Please try again.';
-  if (err.response && err.response.data && err.response.data.error) {
-    message = err.response.data.error;  // <<< use backend's stock message
-  }
-  setAlert({ show: true, message, type: 'error' });
-}
+      console.error('Error placing cart orders:', err);
+      let message = 'Error placing orders. Please try again.';
+      if (err.response && err.response.data && err.response.data.error) {
+        message = err.response.data.error;  // use backend's stock message
+      }
+      setAlert({ show: true, message, type: 'error' });
+    }
   };
 
   const formatPrice = (price) => {
@@ -162,7 +162,7 @@ const Cart = () => {
           <Box>
             <Grid container spacing={3}>
               {cartItems.map((item, index) => (
-                <Grid item xs={12} md={6} lg={4} key={index}>
+                <Grid item xs={12} md={6} lg={4} key={item._id || index}>
                   <Card sx={{ 
                     borderRadius: 3, 
                     boxShadow: 4, 
@@ -194,7 +194,7 @@ const Cart = () => {
                       </Typography>
                     </CardContent>
                     <IconButton
-                      onClick={() => handleRemoveItem(index)}
+                      onClick={() => handleRemoveItem(item._id)} {/* Fixed: Use item._id */}
                       sx={{
                         position: 'absolute',
                         top: 8,
