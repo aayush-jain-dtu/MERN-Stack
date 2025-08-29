@@ -1,514 +1,256 @@
-require('dotenv').config();
-const express = require("express");
-const app = express();
-const cors = require("cors");
-const connectDB = require('./config/database');
+import React, { useState, useEffect } from 'react';
+import {
+  Box,
+  Typography,
+  Container,
+  Paper,
+  IconButton,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Button,
+  Alert,
+  Card,
+  CardContent,
+  CardMedia,
+  Grid
+} from '@mui/material';
+import {
+  ShoppingCart as ShoppingCartIcon,
+  ArrowBack as ArrowBackIcon,
+  Remove as RemoveIcon,
+  Delete as DeleteIcon
+} from '@mui/icons-material';
+import axios from 'axios';
+const API_URL = import.meta.env.VITE_API_URL;
 
-// Import models
-const Category = require('./models/Category');
-const Product = require('./models/Product');
-const Client = require('./models/Client');
-const Employee = require('./models/Employee');
-const Order = require('./models/Order');
-const Cart = require('./models/Cart');
-const Notification = require('./models/Notification');
+const Cart = () => {
+  const [cartItems, setCartItems] = useState([]);
+  const [alert, setAlert] = useState({ show: false, message: '', type: 'success' });
 
-// Connect to database
-connectDB();
-
-app.use(cors({ origin: ["http://localhost:5173",
-                        "http://localhost:3000",        
-                      "https://listiphy-mern.vercel.app"   
-                        ], methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"] }));
-app.use(express.json());
-
-// Helper function to generate order ID
-const generateOrderId = async () => {
-  const lastOrder = await Order.findOne().sort({ id: -1 });
-  const maxId = lastOrder ? parseInt(lastOrder.id) : 677;
-  return (maxId + 1).toString();
-};
-
-// Helper function to get client email by name
-const getClientEmailByName = async (clientName) => {
-  const client = await Client.findOne({ name: clientName });
-  return client ? client.email : null;
-};
-
-// Category routes (previously fruits)
-app.get("/api", async (req, res) => {
-  try {
-    const categories = await Category.find();
-    res.json({ fruits: categories });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.post("/api", async (req, res) => {
-  try {
-    const { title, image } = req.body;
-    if (!title || !image) return res.status(400).json({ error: "Missing fields" });
-    
-    const newCategory = new Category({ title, image });
-    await newCategory.save();
-    res.status(201).json({ message: "Category added" });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Client routes
-app.get("/clients", async (req, res) => {
-  try {
-    const clients = await Client.find();
-    res.json({ clients });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.post("/clients", async (req, res) => {
-  try {
-    const { name, email, contact, address, password } = req.body;
-    if (!name || !email || !contact || !address) {
-      return res.status(400).json({ error: "All fields are required" });
+  const fetchCartItems = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/cart`);
+      setCartItems(res.data);
+    } catch (err) {
+      console.error('Error fetching cart items:', err);
     }
+  };
 
-    const newClient = new Client({
-      name,
-      email,
-      contact,
-      address,
-      password: password || 'listiphy@123'
-    });
-    await newClient.save();
-    res.status(201).json({ message: "Client added successfully" });
-  } catch (error) {
-    if (error.code === 11000) {
-      return res.status(400).json({ error: "Email already exists" });
-    }
-    res.status(500).json({ error: error.message });
-  }
-});
+  useEffect(() => {
+    fetchCartItems();
+  }, []);
 
-app.delete("/clients/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const deletedClient = await Client.findByIdAndDelete(id);
-    if (!deletedClient) {
-      return res.status(404).json({ error: "Client not found" });
-    }
-    res.json({ message: "Client deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Employee routes
-app.get("/employees", async (req, res) => {
-  try {
-    const employees = await Employee.find();
-    res.json({ employees });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.post("/employees", async (req, res) => {
-  try {
-    const { name, email, contact, role, dept, salary, leaves, password } = req.body;
-    if (!name || !email || !contact || !role || !dept || salary === undefined || leaves === undefined) {
-      return res.status(400).json({ error: "All fields are required" });
-    }
-
-    const newEmployee = new Employee({
-      name,
-      email,
-      contact,
-      role,
-      dept,
-      salary: parseFloat(salary),
-      leaves: parseInt(leaves),
-      password: password || 'listiphy@1234'
-    });
-    await newEmployee.save();
-    res.status(201).json({ message: "Employee added successfully" });
-  } catch (error) {
-    if (error.code === 11000) {
-      return res.status(400).json({ error: "Email already exists" });
-    }
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.patch("/employees/:id/leaves", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { leaves } = req.body;
-    
-    if (leaves === undefined || leaves < 0) {
-      return res.status(400).json({ error: "Invalid leaves value" });
-    }
-    
-    const updatedEmployee = await Employee.findByIdAndUpdate(
-      id,
-      { leaves: parseInt(leaves) },
-      { new: true }
-    );
-    
-    if (!updatedEmployee) {
-      return res.status(404).json({ error: "Employee not found" });
-    }
-    
-    res.json({ message: "Leaves updated successfully", employee: updatedEmployee });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.delete("/employees/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const deletedEmployee = await Employee.findByIdAndDelete(id);
-    if (!deletedEmployee) {
-      return res.status(404).json({ error: "Employee not found" });
-    }
-    res.json({ message: "Employee deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Product routes
-app.get("/products/:category", async (req, res) => {
-  try {
-    const category = req.params.category;
-    const products = await Product.find({ 
-      category: { $regex: new RegExp(category, 'i') }
-    });
-    res.json(products);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.get("/products", async (req, res) => {
-  try {
-    const products = await Product.find();
-    res.json(products);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.post("/products", async (req, res) => {
-  try {
-    const { title, image, category, price } = req.body;
-    if (!title || !image || !category || !price) {
-      return res.status(400).json({ error: "All fields are required" });
-    }
-
-    const newProduct = new Product({
-      title,
-      image,
-      category,
-      price: parseFloat(price),
-      quantity: 0
-    });
-    await newProduct.save();
-    res.status(201).json({ message: "Product added successfully" });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.patch("/products/:title", async (req, res) => {
-  try {
-    const { title } = req.params;
-    const { quantityToAdd } = req.body;
-    
-    const product = await Product.findOne({ title });
-    if (!product) return res.status(404).json({ error: "Product not found" });
-
-    product.quantity += quantityToAdd;
-    await product.save();
-    res.json({ message: "Quantity updated", product });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Order routes
-app.get("/orders", async (req, res) => {
-  try {
-    const orders = await Order.find().sort({ createdAt: -1 });
-    res.json(orders);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.post("/orders", async (req, res) => {
-  try {
-    const { client, price, quantity, productTitle, productName, is_custom, description, image } = req.body;
-    if (!client || !quantity || !productName) {
-      return res.status(400).json({ error: "Client, quantity, and product name are required" });
-    }
-
-    // Get client email from clients collection
-    const clientEmail = await getClientEmailByName(client);
-    if (!clientEmail) {
-      return res.status(400).json({ error: "Client not found in database" });
-    }
-
-    // Only check inventory for non-custom orders
-    if (!is_custom) {
-      // Find the product
-      const product = await Product.findOne({
-        title: productTitle || productName
+  // Fixed: Pass the actual MongoDB _id instead of array index
+  const handleRemoveItem = async (itemId) => {
+    try {
+      await axios.delete(`${API_URL}/cart/${itemId}`);
+      await fetchCartItems();
+      setAlert({
+        show: true,
+        message: 'Item removed from cart!',
+        type: 'success'
       });
-
-      if (!product) {
-        return res.status(404).json({ error: "Product not found" });
-      }
-
-      // Check if enough quantity is available
-      if (product.quantity < parseInt(quantity)) {
-        return res.status(400).json({ error: "Stock exceeded. Not enough quantity in stock." });
-      }
-
-      // Deduct ordered quantity
-      product.quantity -= parseInt(quantity);
-      await product.save();
+      setTimeout(() => setAlert({ show: false, message: '', type: 'success' }), 3000);
+    } catch (err) {
+      console.error('Error removing item:', err);
+      setAlert({
+        show: true,
+        message: 'Error removing item from cart',
+        type: 'error'
+      });
     }
+  };
 
-    const orderId = await generateOrderId();
-    const newOrder = new Order({
-      id: orderId,
-      client,
-      email: clientEmail,
-      price: parseFloat(price || 0),
-      quantity: parseInt(quantity),
-      status: 'Pending',
-      date: new Date().toISOString().split('T')[0],
-      productName,
-      productTitle: productTitle || productName,
-      is_custom: is_custom || false,
-      description: is_custom ? description || '' : undefined,
-      image: is_custom ? image || '' : undefined
-    });
-
-    await newOrder.save();
-    res.status(201).json({ message: "Order created successfully", order: newOrder });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Update order status
-app.patch("/orders/:id/status", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { status } = req.body;
-    
-    const order = await Order.findOneAndUpdate(
-      { id: id },
-      { status: status },
-      { new: true }
-    );
-    
-    if (!order) return res.status(404).json({ error: "Order not found" });
-    res.json({ message: "Order status updated", order });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Get custom order details
-app.get("/orders/:id/custom-details", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const order = await Order.findOne({ id: id });
-    
-    if (!order) {
-      return res.status(404).json({ error: "Order not found" });
-    }
-    
-    if (!order.is_custom) {
-      return res.status(400).json({ error: "This is not a custom order" });
-    }
-    
-    res.json({
-      id: order.id,
-      productName: order.productName,
-      description: order.description,
-      image: order.image,
-      client: order.client,
-      email: order.email,
-      quantity: order.quantity,
-      date: order.date,
-      status: order.status
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Cart routes
-app.get("/cart", async (req, res) => {
-  try {
-    const cartItems = await Cart.find().sort({ createdAt: -1 });
-    res.json(cartItems);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.post("/cart", async (req, res) => {
-  try {
-    const { client, price, quantity, productTitle, productName, productImage } = req.body;
-    
-    if (!client || !price || !quantity || !productName) {
-      return res.status(400).json({ error: "All fields are required" });
-    }
-
-    // Get client email
-    const clientEmail = await getClientEmailByName(client);
-    if (!clientEmail) {
-      return res.status(400).json({ error: "Client not found in database" });
-    }
-    
-    const cartItem = new Cart({
-      client,
-      email: clientEmail,
-      price: parseFloat(price),
-      quantity: parseInt(quantity),
-      productTitle: productTitle || productName,
-      productName,
-      productImage: productImage || '',
-      dateAdded: new Date().toISOString().split('T')[0]
-    });
-    
-    await cartItem.save();
-    res.status(201).json({ message: "Item added to cart successfully", cartItem });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.delete("/cart/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const removedItem = await Cart.findByIdAndDelete(id);
-    
-    if (!removedItem) {
-      return res.status(404).json({ error: "Cart item not found" });
-    }
-    
-    res.json({ message: "Item removed from cart successfully", removedItem });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Place all cart orders
-app.post("/cart/place-orders", async (req, res) => {
-  try {
-    const cartItems = await Cart.find();
-    
+  const handlePlaceCartOrders = async () => {
     if (cartItems.length === 0) {
-      return res.status(400).json({ error: "Cart is empty" });
+      setAlert({
+        show: true,
+        message: 'Cart is empty!',
+        type: 'error'
+      });
+      return;
     }
 
-    // Check stock for each cart item before processing orders
-    for (const cartItem of cartItems) {
-      const product = await Product.findOne({
-        title: cartItem.productTitle || cartItem.productName
+    try {
+      await axios.post(`${API_URL}/cart/place-orders`);
+      await fetchCartItems(); // Refresh cart (should be empty now)
+      setAlert({
+        show: true,
+        message: `Successfully placed ${cartItems.length} orders!`,
+        type: 'success'
       });
-      
-      if (!product) {
-        return res.status(404).json({ error: `Product not found: ${cartItem.productName}` });
+      setTimeout(() => setAlert({ show: false, message: '', type: 'success' }), 3000);
+    } catch (err) {
+      console.error('Error placing cart orders:', err);
+      let message = 'Error placing orders. Please try again.';
+      if (err.response && err.response.data && err.response.data.error) {
+        message = err.response.data.error;  // <<< use backend's stock message
       }
-      
-      if (product.quantity < cartItem.quantity) {
-        return res.status(400).json({ 
-          error: `Stock exceeded for ${cartItem.productName}. Only ${product.quantity} left.` 
-        });
-      }
+      setAlert({ show: true, message, type: 'error' });
     }
+  };
 
-    // All cart items have enough stock; proceed with placing orders and updating stock
-    const newOrders = [];
-    
-    for (const cartItem of cartItems) {
-      const product = await Product.findOne({
-        title: cartItem.productTitle || cartItem.productName
-      });
-      
-      // Deduct the quantity
-      product.quantity -= cartItem.quantity;
-      await product.save();
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(price);
+  };
 
-      const orderId = await generateOrderId();
-      const newOrder = new Order({
-        id: orderId,
-        client: cartItem.client,
-        email: cartItem.email,
-        price: cartItem.price,
-        quantity: cartItem.quantity,
-        status: 'Pending',
-        date: new Date().toISOString().split('T')[0],
-        productName: cartItem.productName,
-        productTitle: cartItem.productTitle,
-        is_custom: false
-      });
+  const getTotalAmount = () => {
+    return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+  };
 
-      await newOrder.save();
-      newOrders.push(newOrder);
-    }
+  return (
+    <Container maxWidth="lg">
+      <Box sx={{ mt: 3, mb: 3 }}>
+        {/* Header */}
+        <Paper elevation={2} sx={{ p: 2, mb: 3, backgroundColor: '#424242' }}>
+          <Box display="flex" alignItems="center" justifyContent="space-between">
+            <Box display="flex" alignItems="center">
+              <IconButton sx={{ color: 'white', mr: 2 }}>
+                <ArrowBackIcon />
+              </IconButton>
+              <Typography variant="h5" sx={{ color: 'white', fontWeight: 'bold' }}>
+                Cart ({cartItems.length} items)
+              </Typography>
+            </Box>
+            <IconButton sx={{ color: 'white' }}>
+              <ShoppingCartIcon />
+            </IconButton>
+          </Box>
+        </Paper>
 
-    // Clear the cart
-    await Cart.deleteMany({});
-    
-    res.json({
-      message: `Successfully placed ${newOrders.length} orders`,
-      orders: newOrders
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+        {/* Alert */}
+        {alert.show && (
+          <Alert 
+            severity={alert.type} 
+            sx={{ mb: 2 }}
+            onClose={() => setAlert({ show: false, message: '', type: 'success' })}
+          >
+            {alert.message}
+          </Alert>
+        )}
 
-// Notification Routes
-app.post('/notifications', async (req, res) => {
-  try {
-    const { title, message } = req.body;
-    if (!title || !message) {
-      return res.status(400).json({ error: 'Title and message are required' });
-    }
-    
-    const newNotification = new Notification({
-      title,
-      message,
-      date: new Date()
-    });
-    
-    await newNotification.save();
-    res.status(201).json({ message: 'Notification added', notification: newNotification });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+        {cartItems.length === 0 ? (
+          /* Empty Cart Content */
+          <Paper elevation={1} sx={{ p: 4, textAlign: 'center', backgroundColor: '#f5f5f5' }}>
+            <Box sx={{ py: 8 }}>
+              <ShoppingCartIcon sx={{ fontSize: 80, color: '#bdbdbd', mb: 3 }} />
+              <Typography 
+                variant="h4" 
+                sx={{ 
+                  color: '#424242', 
+                  fontWeight: 'bold',
+                  mb: 2 
+                }}
+              >
+                Your Cart is Empty!
+              </Typography>
+              <Typography variant="body1" sx={{ color: '#757575', mb: 4 }}>
+                Add some items to your cart to see them here.
+              </Typography>
+            </Box>
+          </Paper>
+        ) : (
+          /* Cart Items */
+          <Box>
+            <Grid container spacing={3}>
+              {cartItems.map((item, index) => (
+                <Grid item xs={12} md={6} lg={4} key={item._id || index}>
+                  <Card sx={{ 
+                    borderRadius: 3, 
+                    boxShadow: 4, 
+                    backgroundColor: '#2f2b3e', 
+                    color: '#fff',
+                    position: 'relative'
+                  }}>
+                    <CardMedia
+                      component="img"
+                      height="140"
+                      image={item.productImage}
+                      alt={item.productTitle}
+                    />
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom>
+                        {item.productTitle}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: '#aaa', mb: 1 }}>
+                        Client: {item.client}
+                      </Typography>
+                      <Typography variant="body1" sx={{ color: '#4CAF50', mb: 1 }}>
+                        Price: {formatPrice(item.price)}
+                      </Typography>
+                      <Typography variant="body1" sx={{ mb: 1 }}>
+                        Quantity: {item.quantity}
+                      </Typography>
+                      <Typography variant="h6" sx={{ color: '#FF9800', fontWeight: 'bold' }}>
+                        Total: {formatPrice(item.price * item.quantity)}
+                      </Typography>
+                    </CardContent>
+                    <IconButton
+                      onClick={() => handleRemoveItem(item._id)} // Fixed: Pass actual MongoDB _id
+                      sx={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        backgroundColor: 'rgba(244, 67, 54, 0.8)',
+                        color: 'white',
+                        '&:hover': {
+                          backgroundColor: 'rgba(244, 67, 54, 1)',
+                        }
+                      }}
+                      size="small"
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
 
-app.get('/notifications', async (req, res) => {
-  try {
-    const notifications = await Notification.find().sort({ createdAt: -1 });
-    res.json(notifications);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+            {/* Summary and Place Orders */}
+            <Paper elevation={2} sx={{ mt: 4, p: 3, backgroundColor: '#424242', color: 'white' }}>
+              <Box display="flex" justifyContent="space-between" alignItems="center">
+                <Box>
+                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1 }}>
+                    Cart Summary
+                  </Typography>
+                  <Typography variant="h6">
+                    Total Items: {cartItems.length}
+                  </Typography>
+                  <Typography variant="h6" sx={{ color: '#4CAF50', fontWeight: 'bold' }}>
+                    Grand Total: {formatPrice(getTotalAmount())}
+                  </Typography>
+                </Box>
+                <Button
+                  variant="contained"
+                  size="large"
+                  onClick={handlePlaceCartOrders}
+                  sx={{
+                    backgroundColor: '#FF9800',
+                    '&:hover': { backgroundColor: '#e68900' },
+                    px: 4,
+                    py: 2,
+                    fontSize: '1.1rem',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  Place All Orders
+                </Button>
+              </Box>
+            </Paper>
+          </Box>
+        )}
+      </Box>
+    </Container>
+  );
+};
 
-const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+export default Cart;
