@@ -34,6 +34,7 @@ const Cart = () => {
   const fetchCartItems = async () => {
     try {
       const res = await axios.get(`${API_URL}/cart`);
+      console.log('Fetched cart items:', res.data); // Debug log
       setCartItems(res.data);
     } catch (err) {
       console.error('Error fetching cart items:', err);
@@ -44,9 +45,16 @@ const Cart = () => {
     fetchCartItems();
   }, []);
 
-  const handleRemoveItem = async (index) => {
+  // Fixed: Pass the actual MongoDB _id instead of array index
+  const handleRemoveItem = async (itemId) => {
     try {
-      await axios.delete(`${API_URL}/cart/${index}`);
+      // Debug logging
+      console.log('Attempting to delete item with ID:', itemId);
+      console.log('Full API URL:', `${API_URL}/cart/${itemId}`);
+      
+      const response = await axios.delete(`${API_URL}/cart/${itemId}`);
+      console.log('Delete response:', response.data);
+      
       await fetchCartItems();
       setAlert({
         show: true,
@@ -56,11 +64,19 @@ const Cart = () => {
       setTimeout(() => setAlert({ show: false, message: '', type: 'success' }), 3000);
     } catch (err) {
       console.error('Error removing item:', err);
+      console.error('Error response:', err.response?.data);
+      
+      let errorMessage = 'Error removing item from cart';
+      if (err.response?.data?.error) {
+        errorMessage = err.response.data.error;
+      }
+      
       setAlert({
         show: true,
-        message: 'Error removing item from cart',
+        message: errorMessage,
         type: 'error'
       });
+      setTimeout(() => setAlert({ show: false, message: '', type: 'success' }), 5000);
     }
   };
 
@@ -84,13 +100,13 @@ const Cart = () => {
       });
       setTimeout(() => setAlert({ show: false, message: '', type: 'success' }), 3000);
     } catch (err) {
-  console.error('Error placing cart orders:', err);
-  let message = 'Error placing orders. Please try again.';
-  if (err.response && err.response.data && err.response.data.error) {
-    message = err.response.data.error;  // <<< use backend's stock message
-  }
-  setAlert({ show: true, message, type: 'error' });
-}
+      console.error('Error placing cart orders:', err);
+      let message = 'Error placing orders. Please try again.';
+      if (err.response && err.response.data && err.response.data.error) {
+        message = err.response.data.error;  // <<< use backend's stock message
+      }
+      setAlert({ show: true, message, type: 'error' });
+    }
   };
 
   const formatPrice = (price) => {
@@ -162,7 +178,7 @@ const Cart = () => {
           <Box>
             <Grid container spacing={3}>
               {cartItems.map((item, index) => (
-                <Grid item xs={12} md={6} lg={4} key={index}>
+                <Grid item xs={12} md={6} lg={4} key={item._id || index}>
                   <Card sx={{ 
                     borderRadius: 3, 
                     boxShadow: 4, 
@@ -194,7 +210,7 @@ const Cart = () => {
                       </Typography>
                     </CardContent>
                     <IconButton
-                      onClick={() => handleRemoveItem(index)}
+                      onClick={() => handleRemoveItem(item._id)} // Fixed: Pass actual MongoDB _id
                       sx={{
                         position: 'absolute',
                         top: 8,
