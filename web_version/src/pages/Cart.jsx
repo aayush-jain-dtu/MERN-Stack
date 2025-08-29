@@ -25,7 +25,6 @@ import {
   Delete as DeleteIcon
 } from '@mui/icons-material';
 import axios from 'axios';
-
 const API_URL = import.meta.env.VITE_API_URL;
 
 const Cart = () => {
@@ -45,9 +44,9 @@ const Cart = () => {
     fetchCartItems();
   }, []);
 
-  const handleRemoveItem = async (itemId) => {
+  const handleRemoveItem = async (index) => {
     try {
-      await axios.delete(`${API_URL}/cart/${itemId}`);
+      await axios.delete(`${API_URL}/cart/${index}`);
       await fetchCartItems();
       setAlert({
         show: true,
@@ -77,7 +76,7 @@ const Cart = () => {
 
     try {
       await axios.post(`${API_URL}/cart/place-orders`);
-      await fetchCartItems();
+      await fetchCartItems(); // Refresh cart (should be empty now)
       setAlert({
         show: true,
         message: `Successfully placed ${cartItems.length} orders!`,
@@ -85,13 +84,13 @@ const Cart = () => {
       });
       setTimeout(() => setAlert({ show: false, message: '', type: 'success' }), 3000);
     } catch (err) {
-      console.error('Error placing cart orders:', err);
-      let message = 'Error placing orders. Please try again.';
-      if (err.response && err.response.data && err.response.data.error) {
-        message = err.response.data.error;
-      }
-      setAlert({ show: true, message, type: 'error' });
-    }
+  console.error('Error placing cart orders:', err);
+  let message = 'Error placing orders. Please try again.';
+  if (err.response && err.response.data && err.response.data.error) {
+    message = err.response.data.error;  // <<< use backend's stock message
+  }
+  setAlert({ show: true, message, type: 'error' });
+}
   };
 
   const formatPrice = (price) => {
@@ -110,6 +109,7 @@ const Cart = () => {
   return (
     <Container maxWidth="lg">
       <Box sx={{ mt: 3, mb: 3 }}>
+        {/* Header */}
         <Paper elevation={2} sx={{ p: 2, mb: 3, backgroundColor: '#424242' }}>
           <Box display="flex" alignItems="center" justifyContent="space-between">
             <Box display="flex" alignItems="center">
@@ -126,6 +126,7 @@ const Cart = () => {
           </Box>
         </Paper>
 
+        {/* Alert */}
         {alert.show && (
           <Alert 
             severity={alert.type} 
@@ -137,6 +138,7 @@ const Cart = () => {
         )}
 
         {cartItems.length === 0 ? (
+          /* Empty Cart Content */
           <Paper elevation={1} sx={{ p: 4, textAlign: 'center', backgroundColor: '#f5f5f5' }}>
             <Box sx={{ py: 8 }}>
               <ShoppingCartIcon sx={{ fontSize: 80, color: '#bdbdbd', mb: 3 }} />
@@ -156,10 +158,11 @@ const Cart = () => {
             </Box>
           </Paper>
         ) : (
+          /* Cart Items */
           <Box>
             <Grid container spacing={3}>
               {cartItems.map((item, index) => (
-                <Grid item xs={12} md={6} lg={4} key={item._id || index}>
+                <Grid item xs={12} md={6} lg={4} key={index}>
                   <Card sx={{ 
                     borderRadius: 3, 
                     boxShadow: 4, 
@@ -191,7 +194,7 @@ const Cart = () => {
                       </Typography>
                     </CardContent>
                     <IconButton
-                      onClick={() => handleRemoveItem(item._id)}
+                      onClick={() => handleRemoveItem(index)}
                       sx={{
                         position: 'absolute',
                         top: 8,
@@ -211,6 +214,7 @@ const Cart = () => {
               ))}
             </Grid>
 
+            {/* Summary and Place Orders */}
             <Paper elevation={2} sx={{ mt: 4, p: 3, backgroundColor: '#424242', color: 'white' }}>
               <Box display="flex" justifyContent="space-between" alignItems="center">
                 <Box>
