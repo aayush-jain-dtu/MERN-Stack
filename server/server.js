@@ -13,7 +13,7 @@ const Employee = require('./models/Employee');
 const Order = require('./models/Order');
 const Cart = require('./models/Cart');
 const Notification = require('./models/Notification');
-const mongoose = require("mongoose");
+
 
 // Connect to database
 connectDB();
@@ -97,23 +97,12 @@ app.post("/clients", async (req, res) => {
 app.delete("/clients/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    console.log("DELETE request for client ID:", id);
-
-    // Check ID format
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      console.error("Invalid ObjectId:", id);
-      return res.status(400).json({ error: "Invalid client ID format" });
-    }
-
     const deletedClient = await Client.findByIdAndDelete(id);
-
     if (!deletedClient) {
       return res.status(404).json({ error: "Client not found" });
     }
-
-    res.json({ message: "Client deleted successfully", deletedClient });
+    res.json({ message: "Client deleted successfully" });
   } catch (error) {
-    console.error("Error in delete route:", error);
     res.status(500).json({ error: error.message });
   }
 });
