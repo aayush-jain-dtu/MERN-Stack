@@ -83,9 +83,9 @@ export default function ClientsList() {
     }
   };
 
-  const handleDelete = async (index) => {
+  const handleDelete = async (clientId) => {
     try {
-      await axios.delete(`${API_URL}/clients/${index}`);
+      await axios.delete(`${API_URL}/clients/${clientId}`);
       setAlert({ show: true, message: 'Client deleted successfully!', type: 'success' });
       fetchClients(); // Refresh the list
     } catch (error) {
@@ -181,7 +181,7 @@ export default function ClientsList() {
                 <TableCell sx={{ color: 'white' }}>
                   <IconButton 
                     sx={{ color: 'white' }} 
-                    onClick={() => handleDelete(index)}
+                    onClick={() => handleDelete(client._id)}
                   >
                     <DeleteIcon />
                   </IconButton>
