@@ -227,7 +227,7 @@ export default function Employees() {
                 <TableCell sx={{ color: 'white' }}>
                   <IconButton 
                     sx={{ color: 'white' }} 
-                    onClick={() => handleDelete(employees._id)}
+                    onClick={() => handleDelete(emp._id)}
                   >
                     <DeleteIcon />
                   </IconButton>
