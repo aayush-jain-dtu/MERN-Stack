@@ -87,10 +87,10 @@ export default function Employees() {
     }
   };
 
-  const handleDelete = async (index) => {
+  const handleDelete = async (employeeId) => {
     try {
       console.log('Employee data structure:', employees[0]);
-      await axios.delete(`${API_URL}/employees/${index}`);
+      await axios.delete(`${API_URL}/employees/${employeeId}`);
       setAlert({ show: true, message: 'Employee deleted successfully!', type: 'success' });
       fetchEmployees(); // Refresh the list
     } catch (error) {
@@ -227,7 +227,7 @@ export default function Employees() {
                 <TableCell sx={{ color: 'white' }}>
                   <IconButton 
                     sx={{ color: 'white' }} 
-                    onClick={() => handleDelete(index)}
+                    onClick={() => handleDelete(employees._id)}
                   >
                     <DeleteIcon />
                   </IconButton>
