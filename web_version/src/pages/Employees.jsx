@@ -89,6 +89,7 @@ export default function Employees() {
 
   const handleDelete = async (index) => {
     try {
+      console.log('Employee data structure:', employees[0]);
       await axios.delete(`${API_URL}/employees/${index}`);
       setAlert({ show: true, message: 'Employee deleted successfully!', type: 'success' });
       fetchEmployees(); // Refresh the list
