@@ -1,3 +1,4 @@
+
 require('dotenv').config();
 const express = require("express");
 const app = express();
@@ -12,6 +13,7 @@ const Employee = require('./models/Employee');
 const Order = require('./models/Order');
 const Cart = require('./models/Cart');
 const Notification = require('./models/Notification');
+const mongoose = require("mongoose");
 
 // Connect to database
 connectDB();
