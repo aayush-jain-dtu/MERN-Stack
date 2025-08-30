@@ -85,6 +85,7 @@ export default function ClientsList() {
 
   const handleDelete = async (clientId) => {
     try {
+      console.log("Deleting ID:", clientId);
       await axios.delete(`${API_URL}/clients/${clientId}`);
       setAlert({ show: true, message: 'Client deleted successfully!', type: 'success' });
       fetchClients(); // Refresh the list
