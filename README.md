@@ -4,3 +4,6 @@ A SaaS web app for wholesale distributors to make their business more easy and e
 ## Overview
 
 This repository showcases the code of Listiphy project made with MERN Stack and Material UI.
+
+## deployed link
+https://listiphy-mern.vercel.app/
