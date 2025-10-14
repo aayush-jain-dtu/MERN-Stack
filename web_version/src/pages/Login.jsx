@@ -209,7 +209,7 @@ const Login = ({ onLogin }) => {
           <CardContent>
             <Box sx={{ textAlign: 'center', mb: 3 }}>
               <Typography variant="h4" fontWeight="bold" gutterBottom>
-                Welcome to Listiphy
+                Welcome to Stockify
               </Typography>
               <Typography variant="h6" color="rgba(255,255,255,0.7)">
                 Sign in to your account
