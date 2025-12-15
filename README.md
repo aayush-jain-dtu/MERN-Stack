@@ -1,4 +1,4 @@
-# Stockify
+# Listiphy
 A SaaS web app for wholesale distributors to make their business more easy and efficient
 
 ## Overview
