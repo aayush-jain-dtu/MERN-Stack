@@ -65,7 +65,7 @@ const Sidebar = ({ onNavigate, onLogout, userRole }) => {
         <Button
           variant="contained"
           fullWidth
-          onClick={() => window.open("https://inventorypredictor.vercel.app/", "_blank")}
+          onClick={() => window.open("https://inventory-predictor-api-webapp.vercel.app/", "_blank")}
           sx={{
             backgroundColor: '#1e3a5f',
             color: 'white',
