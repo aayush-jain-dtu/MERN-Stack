@@ -7,11 +7,9 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import LogoutIcon from '@mui/icons-material/Logout';
 
 const API_URL = import.meta.env.VITE_API_URL;
-
 const drawerWidth = 240;
 
 const Sidebar = ({ onNavigate, onLogout, userRole }) => {
-  // Define menu items based on role
   const getMenuItems = () => {
     const allMenuItems = [
       { text: 'Home', icon: <HomeIcon />, roles: ['owner', 'employee', 'client'] },
@@ -24,7 +22,6 @@ const Sidebar = ({ onNavigate, onLogout, userRole }) => {
       { text: 'Place Custom Orders', roles: ['owner', 'employee', 'client'] },
       { text: 'My Cart', icon: <ShoppingCartIcon />, roles: ['owner', 'employee', 'client'] },
     ];
-
     return allMenuItems.filter(item => item.roles.includes(userRole));
   };
 
@@ -50,6 +47,7 @@ const Sidebar = ({ onNavigate, onLogout, userRole }) => {
           Role: {userRole.charAt(0).toUpperCase() + userRole.slice(1)}
         </Box>
       </Box>
+
       <List>
         {menuItems.map((item) => (
           <ListItem button key={item.text} onClick={() => onNavigate(item.text)}>
@@ -58,10 +56,36 @@ const Sidebar = ({ onNavigate, onLogout, userRole }) => {
           </ListItem>
         ))}
       </List>
+
+      {/* ── Try New Feature section ── */}
+      <Box sx={{ px: 2, mt: 2 }}>
+        <Box sx={{ fontSize: 14, color: '#fff', mb: 1, fontWeight: 500 }}>
+          Try New Feature
+        </Box>
+        <Button
+          variant="contained"
+          fullWidth
+          onClick={() => window.open("https://inventorypredictor.vercel.app/", "_blank")}
+          sx={{
+            backgroundColor: '#1e3a5f',
+            color: 'white',
+            borderRadius: '8px',
+            textTransform: 'none',
+            fontWeight: 'bold',
+            fontSize: '13px',
+            '&:hover': {
+              backgroundColor: '#274d7a',
+            }
+          }}
+        >
+          Inventory Predictor
+        </Button>
+      </Box>
+
       <Box sx={{ position: 'absolute', bottom: 20, width: '100%', textAlign: 'center' }}>
-        <Button 
-          variant="contained" 
-          color="secondary" 
+        <Button
+          variant="contained"
+          color="secondary"
           startIcon={<LogoutIcon />}
           onClick={onLogout}
         >
